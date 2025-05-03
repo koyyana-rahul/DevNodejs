@@ -14,7 +14,3 @@ connectDB()
   .catch(() => {
     console.log("database not connected");
   });
-
-// app.listen(7777, () => {
-//   console.log("server listening on port 7777.....");
-// });
