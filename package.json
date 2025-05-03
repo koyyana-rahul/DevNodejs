@@ -1,0 +1,24 @@
+{
+  "name": "devtinder",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/koyyana-rahul/DEVNODEJS.git"
+  },
+  "author": "rahul",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/koyyana-rahul/DEVNODEJS/issues"
+  },
+  "homepage": "https://github.com/koyyana-rahul/DEVNODEJS#readme",
+  "description": "",
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}
