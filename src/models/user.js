@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
 const userSchema = new mongoose.Schema(
   {
@@ -8,78 +10,73 @@ const userSchema = new mongoose.Schema(
       required: true,
       trim: true,
       lowercase: true,
-      minLength: [4, "first name must be atleast 4 characters"],
-      maxLength: [30, "first name must be atmost 30 characters"],
+      minLength: [4, "First name must be at least 4 characters"],
+      maxLength: [30, "First name must be at most 30 characters"],
     },
     lastName: {
       type: String,
       default: "",
-      maxLength: [30, "last name must be atmost 30 characters"],
-      trim: true,
-      lowercase: true,
+      maxLength: [30, "Last name must be at most 30 characters"],
     },
     emailId: {
       type: String,
       required: true,
       unique: true,
-      lowercase: true,
-      trim: true,
-      index: true,
+      index: true, // ✅ index for faster lookup
       validate(value) {
         if (!validator.isEmail(value)) {
-          throw new Error("please enter a valid email");
+          throw new Error("Please enter a valid email");
         }
       },
     },
     password: {
       type: String,
       required: true,
-      minLength: [8, "password must be at least 8 characters"],
-      validate(value) {
-        if (!validator.isStrongPassword(value)) {
-          throw new Error("please enter a strong password");
-        }
-      },
     },
     age: {
       type: Number,
-      min: [0, "age cannot be negative"],
-      max: [150, "age seems unrealistic"],
+      min: [0, "Age cannot be negative"],
+      max: [150, "Age must be at most 150"],
     },
     gender: {
       type: String,
-      enum: {
-        values: ["male", "female", "others"],
-        message: "please select a valid gender",
+      validate(value) {
+        if (!["male", "female", "others"].includes(value)) {
+          throw new Error("Please select a valid gender");
+        }
       },
-      index: true,
     },
     about: {
       type: String,
-      default: "this is about a developer",
-      maxLength: [200, "about must be at most 200 characters"],
-      trim: true,
+      default: "This is about a developer",
+      maxLength: [200, "About must be at most 200 characters"],
     },
     skills: {
       type: [String],
       validate(value) {
         if (value.length > 10) {
-          throw new Error("skills must be at most 10");
-        }
-        for (let skill of value) {
-          if (typeof skill !== "string" || skill.length === 0) {
-            throw new Error("each skill must be a non-empty string");
-          }
+          throw new Error("Skills must be at most 10 items");
         }
       },
     },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 
-// Compound index (optional, see explanation)
-userSchema.index({ firstName: 1, lastName: 1 });
+userSchema.methods.validatePassword = async function (passwordInputByUser) {
+  const user = this;
+  const passwordHash = user.password;
+  const isPasswordValid = await bcrypt.compare(
+    passwordInputByUser,
+    passwordHash
+  );
+  return isPasswordValid;
+};
 
-module.exports = mongoose.model("user", userSchema);
+userSchema.methods.getJWT = async function () {
+  const user = this;
+  const token = await jwt.sign({ _id: user._id }, "#Rahul8620");
+  return token;
+};
+
+module.exports = mongoose.model("User", userSchema);
