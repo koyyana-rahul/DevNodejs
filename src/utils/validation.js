@@ -1,5 +1,7 @@
 const validator = require("validator");
 
+const bcrypt = require("bcrypt");
+
 const validateSignup = (req) => {
   const { firstName, lastName, emailId, password, age, gender, about, skills } =
     req.body;
@@ -63,4 +65,51 @@ const validateSignup = (req) => {
   }
 };
 
-module.exports = {validateSignup};
+const validateForgotPassword = async (password, req, res) => {
+  const { newPassword, confirmPassword } = req.body;
+
+  if (!newPassword || !confirmPassword) {
+    res
+      .status(400)
+      .json({ message: "Both new Password and confim password are required" });
+  }
+
+  if (newPassword !== confirmPassword) {
+    res.status(400).json({
+      message: "Both new password and confirm password must be equals",
+    });
+  }
+
+  if (!validator.isStrongPassword(newPassword)) {
+    res.status(400).json({ message: "please enter a strong password" });
+  }
+
+  const isMatched = await bcrypt.compare(newPassword, password);
+
+  if (isMatched) {
+    res
+      .status(400)
+      .json({ message: "new password must be different from old password" });
+  }
+};
+
+const validateEditProfile = (req) => {
+  const allowedUpdates = [
+    "firstName",
+    "lastName",
+    "age",
+    "gender",
+    "about",
+    "skills",
+  ];
+  const isUpdatedAllowed = Object.keys(req.body).every((key) =>
+    allowedUpdates.includes(key)
+  );
+  return isUpdatedAllowed;
+};
+
+module.exports = {
+  validateSignup,
+  validateEditProfile,
+  validateForgotPassword,
+};
