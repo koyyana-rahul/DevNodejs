@@ -69,25 +69,25 @@ const validateForgotPassword = async (password, req, res) => {
   const { newPassword, confirmPassword } = req.body;
 
   if (!newPassword || !confirmPassword) {
-    res
+    return res
       .status(400)
       .json({ message: "Both new Password and confim password are required" });
   }
 
   if (newPassword !== confirmPassword) {
-    res.status(400).json({
+    return res.status(400).json({
       message: "Both new password and confirm password must be equals",
     });
   }
 
   if (!validator.isStrongPassword(newPassword)) {
-    res.status(400).json({ message: "please enter a strong password" });
+    return res.status(400).json({ message: "please enter a strong password" });
   }
 
   const isMatched = await bcrypt.compare(newPassword, password);
 
   if (isMatched) {
-    res
+    return res
       .status(400)
       .json({ message: "new password must be different from old password" });
   }
