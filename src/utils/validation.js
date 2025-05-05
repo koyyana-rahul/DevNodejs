@@ -1,10 +1,18 @@
 const validator = require("validator");
-
 const bcrypt = require("bcrypt");
 
 const validateSignup = (req) => {
-  const { firstName, lastName, emailId, password, age, gender, about, skills } =
-    req.body;
+  const {
+    firstName,
+    lastName,
+    emailId,
+    password,
+    photoURL,
+    age,
+    gender,
+    about,
+    skills,
+  } = req.body;
 
   if (
     typeof firstName !== "string" ||
@@ -18,7 +26,7 @@ const validateSignup = (req) => {
 
   if (lastName && (typeof lastName !== "string" || lastName.length > 30)) {
     throw new Error(
-      "last name must be a string  and must be at most 30 characters"
+      "last name must be a string and must be at most 30 characters"
     );
   }
 
@@ -32,6 +40,24 @@ const validateSignup = (req) => {
     !validator.isStrongPassword(password)
   ) {
     throw new Error("please enter a strong password");
+  }
+
+  // ✅ photoURL validation (accepts URLs with query strings too)
+  if (photoURL) {
+    if (typeof photoURL !== "string" || !validator.isURL(photoURL)) {
+      throw new Error("photoURL must be a valid URL");
+    }
+
+    const validImageExtensions = [".jpg", ".jpeg", ".png", ".gif", ".webp"];
+    const lowerCasedURL = photoURL.toLowerCase().split("?")[0]; // Remove query string
+
+    const isImageURL = validImageExtensions.some((ext) =>
+      lowerCasedURL.endsWith(ext)
+    );
+
+    if (!isImageURL) {
+      throw new Error("photoURL must point to an image (e.g., .jpg, .png)");
+    }
   }
 
   if (age !== undefined) {
@@ -97,6 +123,7 @@ const validateEditProfile = (req) => {
   const allowedUpdates = [
     "firstName",
     "lastName",
+    "photoURL",
     "age",
     "gender",
     "about",
