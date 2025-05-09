@@ -17,6 +17,7 @@ authRouter.post("/signup", async (req, res) => {
       lastName,
       emailId,
       password,
+      photoURL,
       age,
       gender,
       about,
@@ -30,6 +31,7 @@ authRouter.post("/signup", async (req, res) => {
       lastName,
       emailId,
       password: passwordHash,
+      photoURL,
       age,
       gender,
       about,
@@ -50,7 +52,8 @@ authRouter.post("/login", async (req, res) => {
     const user = await User.findOne({ emailId: emailId });
 
     if (!user) {
-      throw new Error("invalid credentials");
+      // throw new Error("invalid credentials");
+      return res.status(400).send({ message: "Invalid credentials" });
     }
 
     const isPasswordValid = await user.validatePassword(password);
@@ -63,7 +66,7 @@ authRouter.post("/login", async (req, res) => {
       });
       res.send(user);
     } else {
-      return res.json({ message: "Invalid credentials" });
+      return res.status(400).json({ message: "Invalid credentials" });
     }
   } catch (err) {
     res.status(400).send("ERROR: " + err.message);
