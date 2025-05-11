@@ -16,7 +16,6 @@ const USER_SAFE_DATA = [
 
 const userRouter = express.Router();
 
-// ✅ Get all received connection requests
 userRouter.get("/user/requests/received", userAuth, async (req, res) => {
   try {
     const loggedInUser = req.user;
@@ -28,38 +27,46 @@ userRouter.get("/user/requests/received", userAuth, async (req, res) => {
       })
       .populate("fromUserId", USER_SAFE_DATA);
 
-    res.json({ message: "All connection requests", data: connectionRequests });
+    res.status(200).json({
+      message: "Data fetched successfully",
+      data: connectionRequests,
+    });
   } catch (err) {
-    res.status(400).send("ERROR: " + err.message);
+    res.status(400).json({
+      message: "Error fetching data",
+      error: err.message,
+    });
   }
 });
 
 // ✅ Get all accepted connections
+
 userRouter.get("/user/connections", userAuth, async (req, res) => {
   try {
     const loggedInUser = req.user;
 
-    const connections = await connectionRequestModel
+    const connectionRequests = await connectionRequestModel
       .find({
         $or: [
-          { fromUserId: loggedInUser._id, status: "accepted" },
           { toUserId: loggedInUser._id, status: "accepted" },
+          { fromUserId: loggedInUser._id, status: "accepted" },
         ],
       })
       .populate("fromUserId", USER_SAFE_DATA)
       .populate("toUserId", USER_SAFE_DATA);
 
-    const data = connections.map((row) => {
-      // Return the user who is not the logged-in user
+    // console.log(connectionRequests);
+
+    const data = connectionRequests.map((row) => {
       if (row.fromUserId._id.toString() === loggedInUser._id.toString()) {
         return row.toUserId;
       }
       return row.fromUserId;
     });
 
-    res.json({ message: "All connections", data });
+    res.json({ data });
   } catch (err) {
-    res.status(400).send("ERROR: " + err.message);
+    res.status(400).send({ message: err.message });
   }
 });
 
